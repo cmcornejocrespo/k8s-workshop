@@ -208,7 +208,7 @@ kubectl create -f <path to manifest>
 $ kubectl create namespace dev
 namespace "dev" created
 $
-$ kubectl create -f  workshop-01/manifests/mypod.yaml -n dev
+$ kubectl create -f  workshop-01/manifests/mypod.yaml
 pod "mypod" created
 $ kubectl get pods mypod  --watch
 ```

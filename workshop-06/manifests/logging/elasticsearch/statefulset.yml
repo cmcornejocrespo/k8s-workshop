@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: elastic
+  labels:
+    app: elasticsearch
+spec:
+  serviceName: elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+      - name: configure-sysctl
+        securityContext:
+          runAsUser: 0
+          privileged: true
+        image: "busybox:1.27.2"
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+      containers:
+      - image: docker.elastic.co/elasticsearch/elasticsearch:6.8.0
+        name: elasticsearch
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: ES_JAVA_OPTS
+          valueFrom:
+              configMapKeyRef:
+                  name: elasticsearch-config
+                  key: ES_JAVA_OPTS
+        resources:
+          requests:
+            cpu: "0.25"
+          limits:
+            cpu: "1"
+        ports:
+        - containerPort: 9200
+          protocol: TCP
+        - containerPort: 9300
+          protocol: TCP
+          name: transport
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health?local=true
+            port: 9200
+          initialDelaySeconds: 5
+        volumeMounts:
+          - name: data
+            mountPath: /usr/share/elasticsearch/data
+          - name: elasticsearch-config
+            mountPath: /usr/share/elasticsearch/elasticsearch.yml
+            readOnly: true
+            subPath: elasticsearch.yml        
+      volumes:
+      - name: elasticsearch-config
+        configMap:
+          name: elasticsearch-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: elasticsearch
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi

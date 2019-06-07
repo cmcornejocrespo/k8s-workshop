@@ -1,0 +1,66 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: elastic
+  labels:
+    app: filebeat
+data:
+  filebeat.yml: |-
+    filebeat.config:
+      inputs:
+        # Mounted `filebeat-inputs` configmap:
+        path: ${path.config}/inputs.d/*.yml
+        # Reload inputs configs as they change:
+        reload.enabled: false
+      modules:
+        path: ${path.config}/modules.d/*.yml
+        # Reload module configs as they change:
+        reload.enabled: false
+
+    setup:
+      kibana:
+        host: "http://kibana:5601"
+      dashboards:
+        enabled: true
+        index: "filebeat-*"
+        retry:
+          enabled: true
+          interval: 30
+      template:
+        enabled: true
+
+    queue.mem:
+      events: 4096
+      flush.timeout: 5s
+    
+    output.logstash:
+      hosts: ["logstash:5555"]
+
+    filebeat.autodiscover:
+      providers:
+        - type: kubernetes
+          hints.enabled: true
+
+    processors:
+      - add_cloud_metadata:
+      - add_host_metadata: ~
+      - drop_event:
+          when:
+            equals:
+              kubernetes.container.name: "filebeat"
+      - drop_fields:
+          fields: 
+            - "beat.hostname"
+            - "beat.name"
+            - "beat.version"
+            - "input.type"
+            - "prospector.type"
+            - "stream"
+            - "kubernetes.labels.pod-template-hash"
+            - "kubernetes.labels.controller-revision-hash"
+            - "kubernetes.labels.pod-template-generation"
+            - "kubernetes.labels.app"
+            - "source"
+            - "host.name"

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-config
+  namespace: elastic
+  labels:
+    app: kibana-config
+data:
+  kibana.yml: |-
+    elasticsearch:
+      hosts: elasticsearch-0.elasticsearch.elastic:9200

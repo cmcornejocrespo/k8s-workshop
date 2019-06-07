@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: elastic
+  labels:
+    app: logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      initContainers:
+        - name: wait-for-elasticsearch
+          image: appropriate/curl
+          resources:
+            limits:
+              cpu: 150m
+              memory: 50Mi
+            requests:
+              cpu: 150m
+              memory: 50Mi
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          args:
+          - "sh"
+          - "-c"
+          - "while [ $(curl -sw %{http_code} http://elasticsearch-0.elasticsearch.${NAMESPACE}.svc.cluster.local:9200/_cluster/health?pretty -o /dev/null) -ne 200 ]; do sleep 15; done"
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:6.8.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: monitor
+              containerPort: 9600
+              protocol: TCP
+            - containerPort: 5555
+              name: beats
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: monitor
+            initialDelaySeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: monitor
+            initialDelaySeconds: 20
+          resources:
+            {}
+          volumeMounts:
+            - name: logstash-config
+              mountPath: /usr/share/logstash/logstash.yml
+              subPath: logstash.yml
+            - name: logstash-config-pipeline
+              mountPath: /usr/share/logstash/pipeline
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+        - name: logstash-config-pipeline
+          configMap:
+            name: logstash-config-pipeline

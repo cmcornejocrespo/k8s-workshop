@@ -9,9 +9,11 @@ and how they are used is crucial to learning how to use the higher level objects
 
 # Index
 * [Application Introspection and Debugging](#Application-Introspection-and-Debugging)
+  * [Exercise: kubectl top pod](#Exercise:-kubectl-top-pod)
   * [Exercise: kubectl describe pods](#Exercise:-kubectl-describe-pods)
   * [Exercise: Debugging Pending Pods](#Exercise:-debugging-pending-pods)
 * [Cluster-level monitoring](#Cluster-level-monitoring)
+  * [Exercise: kubectl top node](#Exercise:-kubectl-top-node)
   * [Exercise: Kubernetes dashboard](#Exercise:-kubernetes-dashboard)
   * [Exercise: Deploy weave scope](#Exercise:-deploy-weave-scope)
   * [Exercise: Deploy stack elastic](#Exercise:-deploy-stack-elastic)
@@ -22,6 +24,44 @@ and how they are used is crucial to learning how to use the higher level objects
 
 # Application Introspection and Debugging
 Once your application is running, you’ll inevitably need to debug problems with it. You should be able to troubleshoot your application at pod and node level by leveraging to the Kubernetes API commands.
+
+---
+
+## Exercise: kubectl top pod
+**Objectives:** Learn how to use `kubectl top pod` to fetch metrics about pods.
+
+The easiest way to see basic node metrics is by using kubectl. The kubectl top command communicates with Metrics Server to get the latest node metrics and displays them in your terminal.
+
+1) Deploy example pod
+
+**Command**
+```
+$ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
+```
+
+2) Check pod metrics (it may take time)
+
+**Command**
+
+```
+$ kubectl top pod
+
+NAME                                CPU(cores)   MEMORY(bytes)   
+nginx-deployment-86b474f84f-bgrqd   0m           2Mi             
+nginx-deployment-86b474f84f-gv66s   0m           2Mi  
+```
+
+3) Clean up
+
+**Command**
+
+```
+$ kubectl delete deployment nginx-deployment
+```
+
+---
+
+[Back to Index](#index)
 
 ---
 
@@ -150,6 +190,43 @@ Kubernetes provides detailed information about an application’s resource usage
 
 ---
 
+## Exercise: kubectl top node
+**Objectives:** Learn how to use `kubectl top node` to fetch metrics about nodes.
+
+The easiest way to see basic node metrics is by using kubectl. The kubectl top command communicates with Metrics Server to get the latest node metrics and displays them in your terminal.
+
+1) Deploy example pod
+
+**Command**
+```
+$ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
+```
+
+2) Check node metrics
+
+**Command**
+
+```
+$ kubectl top node
+
+NAME       CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
+minikube   137m         6%     730Mi           18%   
+```
+
+3) Clean up
+
+**Command**
+
+```
+$ kubectl delete deployment nginx-deployment
+```
+
+---
+
+[Back to Index](#index)
+
+---
+
 ## Exercise: Kubernetes dashboard
 
 [Kubernetes Dashboard](https://github.com/kubernetes/dashboard) is a general purpose, web-based UI for Kubernetes clusters. It allows users to manage applications running in the cluster, troubleshoot them, as well as manage the cluster itself.
@@ -197,7 +274,7 @@ $ kubectl port-forward -n weave "$(kubectl get -n weave pod --selector=weave-sco
 **Command**
 
 ```sh
-$ kubectl delete ns weave
+$ kubectl delete -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
 
 ---
@@ -215,9 +292,9 @@ $ kubectl delete ns weave
 
 ```sh
 $ minikube start --memory 4096
-````
+```
 
-1) Create elastic namespace
+### Create elastic namespace
 
 **Command**
 
@@ -233,21 +310,21 @@ Verify it's created
 $ kubectl get ns
 ```
 
-2) Deploy elastic logging stack from `workshop-06/manifests/logging` with the command below.
+### Deploy elastic logging stack from `workshop-06/manifests/logging` with the command below.
 
 **Command**
 ```sh
 $ kubectl create -Rf workshop-06/manifests/logging
 ```
 
-3) Wait until the stack is ready
+Wait until the stack is ready
 
 **Command**
 ```
 $ kubectl get pods --show-labels --watch -n elastic
 ```
 
-4) Deploy kube state metrics.
+### Deploy kube state metrics
 
 **Note** kube-state-metrics is a simple service that listens to the Kubernetes API server and generates metrics about the state of the objects. (See examples in the Metrics [section](https://github.com/kubernetes/kube-state-metrics/tree/master/docs#exposed-metrics). It is not focused on the health of the individual Kubernetes components, but rather on the health of the various objects inside, such as deployments, nodes and pods.
 
@@ -263,7 +340,7 @@ Check is up and running
 $  kubectl get pods --show-labels --watch -n kube-system
 ```
 
-5) Deploy metricbeat
+### Deploy metricbeat
 
 **Command**
 
@@ -278,11 +355,11 @@ Check is up and running
 $ kubectl get pods --show-labels --watch -n elastic
 ```
 
-6) Check Kibana
+### Check Kibana
 
 - Check index is created
 - Check discover
-- Check infra viw (host, )
+- Check infra view (host, kubernetes, docker)
 - Check [Metricbeat Kubernetes] Overview
 
 
@@ -291,7 +368,7 @@ $ kubectl get pods --show-labels --watch -n elastic
 $ kubectl get pods --show-labels --watch -n elastic
 ```
 
-6) Enable port forwarding to kibana.
+### Enable port forwarding to kibana
 
 **Command**
 ```
@@ -300,12 +377,11 @@ $ kubectl port-forward -n elastic  service/kibana 5601
 
 Open your browser to ``localhost:5601``
 
-7) Deploy Filebeat, Use the
-manifests inside `workshop-06/manifests/logging/filebeat`.
+### Deploy heartbeat
 
 **Command**
 ```
-$ kubectl apply -Rf workshop-06/manifests/logging/filebeat
+$ kubectl apply -Rf workshop-07/manifests/elastic/beats/heartbeat
 ```
 
 Check is up and running
@@ -315,14 +391,22 @@ Check is up and running
 $ kubectl get pods --show-labels --watch -n elastic
 ```
 
-8) Configure index in Kibana and demo the stack
+### Check Kibana
+
+- Check index is created
+- Check discover
+- Check uptime
+- Check Heartbeat HTTP monitoring
 
 # Cleaning up
 
 Destroy the stack.
 
 **Command**
+
 ```
+$ kubectl delete -Rf workshop-06/manifests/elastic
+$ kubectl delete -Rf workshop-07/manifests/elastic
 $ kubectl delete ns elastic
 ```
 
@@ -335,8 +419,10 @@ $ kubectl delete ns elastic
 
 # Helpful Resources
 
-* [kubectl logs](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#logs)
 * [elastic](https://www.elastic.co/products/)
+* [metricbeat](https://www.elastic.co/guide/en/beats/metricbeat/6.8/index.html)
+* [heartbeat](https://www.elastic.co/guide/en/beats/heartbeat/6.8/index.html)
+* [packetbeat](https://www.elastic.co/guide/en/beats/packetbeat/6.8/index.html)
 
 ---
 

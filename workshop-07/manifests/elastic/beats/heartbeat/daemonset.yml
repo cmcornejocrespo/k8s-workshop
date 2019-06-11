@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: heartbeat
+  namespace: elastic
+  labels:
+    app: heartbeat
+spec:
+  template:
+    metadata:
+      labels:
+        app: heartbeat
+    spec:
+      serviceAccountName: heartbeat
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: heartbeat
+        image: docker.elastic.co/beats/heartbeat:6.8.0
+        args: [
+          "-e"
+        ]
+        securityContext:
+          runAsUser: 0
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/heartbeat/heartbeat.yml
+          readOnly: true
+          subPath: heartbeat.yml
+        - name: data
+          mountPath: /usr/share/heartbeat/data
+      volumes:
+      - name: config
+        configMap:
+          name: heartbeat-config
+          defaultMode: 0600
+      - name: data
+        hostPath:
+          path: /var/lib/heartbeat
+          type: DirectoryOrCreate

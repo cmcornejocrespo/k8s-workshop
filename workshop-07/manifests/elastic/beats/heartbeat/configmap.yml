@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: heartbeat-config
+  namespace: elastic
+  labels:
+    app: heartbeat
+data:
+  heartbeat.yml: |-
+    heartbeat.monitors:
+    - type: http
+      schedule: '@every 5s'
+      urls:
+        - http://elasticsearch-0.elasticsearch.elastic:9200/_cluster/health
+        - http://kibana:5601/status
+        - http://logstash:9600/?pretty
+
+    output.elasticsearch:
+      hosts: ['http://elasticsearch-0.elasticsearch.elastic:9200']
+
+    setup:
+      kibana:
+        host: "http://kibana:5601"
+      dashboards:
+        enabled: true
+        index: "heartbeat-*"
+        retry:
+          enabled: true
+          interval: 30
+      template:
+        enabled: true
+
+    xpack.monitoring.enabled: true

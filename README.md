@@ -8,3 +8,4 @@
 - [Workshop 04 - Working with Volumes](workshop-04.md)
 - [Workshop 05 - ConfigMaps and Secrets](workshop-05.md)
 - [Workshop 06 - Logging Architecture](workshop-06.md)
+- [Workshop 07 - Monitoring](workshop-07.md)

@@ -71,7 +71,6 @@ We'll deploy a cluster-level logging solution based on ELK+F (elasticsearch, log
 **Objective:** Deploy the stack anf use Kibana to examine the logs from an example pod.
 
 ---
-
 1) Create a simple Pod called `counter` using the `busybox` image. Use the
 manifest `workshop-06/manifests/counter-pod.yaml` or the yaml below.
 
@@ -94,12 +93,11 @@ spec:
 $ kubectl create -f workshop-06/manifests/counter-pod.yaml
 ```
 
-2) Create namespace called `elastic`. Use the
-manifest `workshop-06/manifests/logging/namespace.yaml` or the yaml below.
+2) Create namespace called `elastic`. 
 
 **Command**
 ```
-$ kubectl apply -f workshop-06/manifests/logging/namespace.yml
+$ kubectl create ns elastic
 ```
 
 Verify it's created
@@ -110,11 +108,11 @@ $ kubectl get ns
 ```
 
 3) Deploy elasticsearch, Use the
-manifests inside `workshop-06/manifests/logging/elasticsearch`.
+manifests inside `workshop-06/manifests/elastic/elasticsearch`.
 
 **Command**
 ```
-$ kubectl apply -Rf workshop-06/manifests/logging/elasticsearch
+$ kubectl apply -Rf workshop-06/manifests/elastic/elasticsearch
 ```
 
 Check is up and running
@@ -125,11 +123,11 @@ $ kubectl get pods --show-labels --watch -n elastic
 ```
 
 4) Deploy Kibana, Use the
-manifests inside `workshop-06/manifests/logging/kibana`.
+manifests inside `workshop-06/manifests/elastic/kibana`.
 
 **Command**
 ```
-$ kubectl apply -Rf workshop-06/manifests/logging/kibana
+$ kubectl apply -Rf workshop-06/manifests/elastic/kibana
 ```
 
 Check is up and running
@@ -140,11 +138,11 @@ $ kubectl get pods --show-labels --watch -n elastic
 ```
 
 5) Deploy Logstash, Use the
-manifests inside `workshop-06/manifests/logging/logstash`.
+manifests inside `workshop-06/manifests/elastic/logstash`.
 
 **Command**
 ```
-$ kubectl apply -Rf workshop-06/manifests/logging/logstash
+$ kubectl apply -Rf workshop-06/manifests/elastic/logstash
 ```
 
 Check is up and running
@@ -164,11 +162,11 @@ $ kubectl port-forward -n elastic  service/kibana 5601
 Open your browser to ``localhost:5601``
 
 7) Deploy Filebeat, Use the
-manifests inside `workshop-06/manifests/logging/filebeat`.
+manifests inside `workshop-06/manifests/elastic/filebeat`.
 
 **Command**
 ```
-$ kubectl apply -Rf workshop-06/manifests/logging/filebeat
+$ kubectl apply -Rf workshop-06/manifests/elastic/filebeat
 ```
 
 Check is up and running
@@ -186,6 +184,7 @@ Destroy the stack.
 
 **Command**
 ```
+$ kubectl delete -Rf workshop-06/manifests/elastic
 $ kubectl delete ns elastic
 ```
 

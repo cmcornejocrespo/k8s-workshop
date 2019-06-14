@@ -9,3 +9,4 @@
 - [Workshop 05 - ConfigMaps and Secrets](workshop-05.md)
 - [Workshop 06 - Logging Architecture](workshop-06.md)
 - [Workshop 07 - Monitoring](workshop-07.md)
+- [Workshop 08 - Deployment strategies](workshop-08.md)

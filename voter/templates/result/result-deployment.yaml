@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: result
+spec:
+  replicas: {{ .Values.result.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: result
+    spec:
+      containers:
+      - image: "{{ .Values.result.image.repository }}:{{ .Values.result.image.tag }}"
+        imagePullPolicy: {{ .Values.vote.image.pullPolicy }}
+        name: result

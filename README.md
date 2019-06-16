@@ -9,4 +9,5 @@
 - [Workshop 05 - ConfigMaps and Secrets](workshop-05.md)
 - [Workshop 06 - Logging Architecture](workshop-06.md)
 - [Workshop 07 - Monitoring](workshop-07.md)
-- [Workshop 08 - Deployment strategies](workshop-08.md)
+- [Workshop 08 - Horizontal Pod Autoscaling](workshop-08.md)
+- [Workshop 09 - Helm the Kubernetes package manager](workshop-09.md)

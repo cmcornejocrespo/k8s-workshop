@@ -28,22 +28,22 @@ This demonstration uses a pod specification with a container that writes some te
 ---
 
 1) Deploy example pod
-```
-$ kubectl apply -f workshop-06/manifests/counter-pod.yaml
-```
+    ```
+    $ kubectl apply -f workshop-06/manifests/counter-pod.yaml
+    ```
 
 2) To fetch the logs, use the `kubectl` logs command, as follows:
-```
-$ kubectl logs counter
-```
+    ```
+    $ kubectl logs counter
+    ```
 3) To fetch the logs following:
-```
-$ kubectl logs counter -f
-```
+    ```
+    $ kubectl logs counter -f
+    ```
 4) Clean up:
-```
-$ kubectl delete counter
-```
+    ```
+    $ kubectl delete counter
+    ```
 **note** You can use kubectl logs to retrieve logs from a previous instantiation of a container with --previous flag, in case the container has crashed.
 
 **note** If your pod has multiple containers, you should specify which container’s logs you want to access by appending a container name to the command
@@ -75,18 +75,18 @@ We'll deploy a cluster-level logging solution based on ELK+F (elasticsearch, log
 manifest `workshop-06/manifests/counter-pod.yaml` or the yaml below.
 
 **workshop-06/manifests/counter-pod.yaml**
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: counter
-spec:
-  containers:
-  - name: count
-    image: busybox
-    args: [/bin/sh, -c,
-            'i=0; while true; do echo "$i: $(date)"; i=$((i+1)); sleep 1; done']
-```
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: counter
+  spec:
+    containers:
+    - name: count
+      image: busybox
+      args: [/bin/sh, -c,
+              'i=0; while true; do echo "$i: $(date)"; i=$((i+1)); sleep 1; done']
+  ```
 
 **Command**
 ```
@@ -95,10 +95,10 @@ $ kubectl create -f workshop-06/manifests/counter-pod.yaml
 
 2) Create namespace called `elastic`. 
 
-**Command**
-```
-$ kubectl create ns elastic
-```
+    **Command**
+    ```
+    $ kubectl create ns elastic
+    ```
 
 Verify it's created
 
@@ -110,10 +110,10 @@ $ kubectl get ns
 3) Deploy elasticsearch, Use the
 manifests inside `workshop-06/manifests/elastic/elasticsearch`.
 
-**Command**
-```
-$ kubectl apply -Rf workshop-06/manifests/elastic/elasticsearch
-```
+    **Command**
+    ```
+    $ kubectl apply -Rf workshop-06/manifests/elastic/elasticsearch
+    ```
 
 Check is up and running
 
@@ -125,60 +125,60 @@ $ kubectl get pods --show-labels --watch -n elastic
 4) Deploy Kibana, Use the
 manifests inside `workshop-06/manifests/elastic/kibana`.
 
-**Command**
-```
-$ kubectl apply -Rf workshop-06/manifests/elastic/kibana
-```
+    **Command**
+    ```
+    $ kubectl apply -Rf workshop-06/manifests/elastic/kibana
+    ```
 
-Check is up and running
+    Check is up and running
 
-**Command**
-```
-$ kubectl get pods --show-labels --watch -n elastic
-```
+    **Command**
+    ```
+    $ kubectl get pods --show-labels --watch -n elastic
+    ```
 
 5) Deploy Logstash, Use the
 manifests inside `workshop-06/manifests/elastic/logstash`.
 
-**Command**
-```
-$ kubectl apply -Rf workshop-06/manifests/elastic/logstash
-```
+    **Command**
+    ```
+    $ kubectl apply -Rf workshop-06/manifests/elastic/logstash
+    ```
 
-Check is up and running
+    Check is up and running
 
-**Command**
-```
-$ kubectl get pods --show-labels --watch -n elastic
-```
+    **Command**
+    ```
+    $ kubectl get pods --show-labels --watch -n elastic
+    ```
 
 6) Enable port forwarding to kibana.
 
-**Command**
-```
-$ kubectl port-forward -n elastic  service/kibana 5601
-```
+    **Command**
+    ```
+    $ kubectl port-forward -n elastic  service/kibana 5601
+    ```
 
-Open your browser to ``localhost:5601``
+    Open your browser to ``localhost:5601``
 
 7) Deploy Filebeat, Use the
 manifests inside `workshop-06/manifests/elastic/filebeat`.
 
-**Command**
-```
-$ kubectl apply -Rf workshop-06/manifests/elastic/filebeat
-```
+    **Command**
+    ```
+    $ kubectl apply -Rf workshop-06/manifests/elastic/filebeat
+    ```
 
-Check is up and running
+    Check is up and running
 
-**Command**
-```
-$ kubectl get pods --show-labels --watch -n elastic
-```
+    **Command**
+    ```
+    $ kubectl get pods --show-labels --watch -n elastic
+    ```
 
 8) Configure index in Kibana and demo the stack
 
-# Cleaning up
+  # Cleaning up
 
 Destroy the stack.
 

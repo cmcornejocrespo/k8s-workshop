@@ -37,181 +37,116 @@ The Horizontal Pod Autoscaler is implemented as a Kubernetes API resource and a 
 1) Start `minikube` with 4 cpu's and 4GB of memory
 **Note** the params specified to configure the behavior of the controller manager.
 
-**Command**
+    **Command**
 
-```sh
-$ minikube start --cpus=4 --memory 4096 \
-  --extra-config=controller-manager.horizontal-pod-autoscaler-downscale-stabilization=5s \
-  --extra-config=controller-manager.horizontal-pod-autoscaler-sync-period=5s
-```
+    ```sh
+    $ minikube start --cpus=4 --memory 4096 \
+    --extra-config=controller-manager.horizontal-pod-autoscaler-downscale-stabilization=5s \
+    --extra-config=controller-manager.horizontal-pod-autoscaler-sync-period=5s
+    ```
 
 2) Check heapster and metrics server are enabled
 
-**Command**
-```sh
-$ minikube addons list | grep enabled
-```
+    **Command**
+    ```sh
+    $ minikube addons list | grep enabled
+    ```
 
 3) Check metrics pods are `Running`
 
-**Command**
-```sh
-$ kubectl get pods --namespace=kube-system | grep heapster
-$ kubectl get pods --namespace=kube-system | grep metrics-server
-```
+    **Command**
+    ```sh
+    $ kubectl get pods --namespace=kube-system | grep heapster
+    $ kubectl get pods --namespace=kube-system | grep metrics-server
+    ```
 
 4) Check heapster is connected to `influxDB`
 
-**Command**
-```sh
-$ kubectl logs -n kube-system $(kubectl get -n kube-system pod --selector=k8s-app=heapster -o jsonpath='{.items..metadata.name}') | grep "k8s"
-```
+    **Command**
+    ```sh
+    $ kubectl logs -n kube-system $(kubectl get -n kube-system pod --selector=k8s-app=heapster -o jsonpath='{.items..metadata.name}') | grep "k8s"
+    ```
 
 5) Check cpu and mem allocation
 
-**Command**
-```sh
-$ kubectl describe nodes
-$ kubectl top node
-$ kubectl top pod -n kube-system
-```
+    **Command**
+    ```sh
+    $ kubectl describe nodes
+    $ kubectl top node
+    $ kubectl top pod -n kube-system
+    ```
 
 6) Open grafana 
 
-**Command**
-```sh
-$ minikube addons open heapster
-```
+    **Command**
+    ```sh
+    $ minikube addons open heapster
+    ```
 
 7) configure grafana UI (optional)
 
-- https://grafana.com/dashboards/3646
-- https://grafana.com/dashboards/3649
+    - https://grafana.com/dashboards/3646
+    - https://grafana.com/dashboards/3649
 
 8) Check previous values (request, usage) in Grafana
 
 9) Deploy example app
 
-**Command**
+    **Command**
 
-```sh
-kubectl apply -Rf workshop-08/manifests/app
-```
+    ```sh
+    kubectl apply -Rf workshop-08/manifests/app
+    ```
 
 10) wait until pod is Running (1 replica is running)
 
-**Command**
+    **Command**
 
-```sh
-kubectl get pods --show-labels --watch
-```
+    ```sh
+    kubectl get pods --show-labels --watch
+    ```
 
 11) Deploy `HPA`
 
-**Command**
+    **Command**
 
-```sh
-kubectl apply -f workshop-08/manifests/hpa/hpa.yaml
-```
+    ```sh
+    kubectl apply -f workshop-08/manifests/hpa/hpa.yaml
+    ```
 
 12) open new tab and run the following
 
-**Command**
+    **Command**
 
-```sh
-$ kubectl get hpa -w
-```
+    ```sh
+    $ kubectl get hpa -w
+    ```
 
 13) open new tab and run the following (check 5 replicas running)
 
-**Command**
+    **Command**
 
-```sh
-$ kubectl get deployment php-apache -w
-```
+    ```sh
+    $ kubectl get deployment php-apache -w
+    ```
 
 14) open new tab and run the following
 
-**Command**
+    **Command**
 
-```sh
-$ kubectl run --rm -i --tty load-generator --image=busybox /bin/sh
-# run this
-while true; do wget -q -O- http://php-apache.default.svc.cluster.local; done
-```
+    ```sh
+    $ kubectl run --rm -i --tty load-generator --image=busybox /bin/sh
+    # run this
+    while true; do wget -q -O- http://php-apache.default.svc.cluster.local; done
+    ```
 
 15) Wait for the hpa to trigger (observe `hpa` and `deployment`)
 
 16) Stop the loader and check how the deployment scales down to 5
 
-
 ---
 
 [Back to Index](#index)
-
----
-
-
-# Index
-* [Application Introspection and Debugging](#Application-Introspection-and-Debugging)
-  * [Exercise: kubectl top pod](#Exercise:-kubectl-top-pod)
-* [Cluster-level monitoring](#Cluster-level-monitoring)
-  * [Exercise: kubectl top node](#Exercise:-kubectl-top-node)
-* [Cleaning up](#cleaning-up)
-* [Helpful Resources](#helpful-resources)
-
----
-
-# Application Introspection and Debugging
-
-## Exercise: Debugging Pending Pods
-**Objectives:** Learn how to use `kubectl describe pod` and `kubectl describe nodes` to troubleshoot app deployments.
-
-A common scenario that you can detect using events is when you’ve created a Pod that won’t fit on any node. For example, the Pod might request more resources than are free on any node, or it might specify a label selector that doesn’t match any nodes. Let’s say we created the previous Deployment with 5 replicas (instead of 2) and requesting 600 millicores instead of 500, on a four-node cluster where each (virtual) machine has 1 CPU. In that case one of the Pods will not be able to schedule
-
----
-
-1) Start off by deleting the deployment and checking the node status
-
-**Command**
-```sh
-$ kubectl delete deployment nginx-deployment
-```
-
-**Command**
-```sh
-$ kubectl describe nodes
-```
-
-Understand `kubectl describe nodes` **output**
-
-
-3) Deploy and scale up previous deployment
-
-**Command**
-```
-$ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
-$ kubectl scale deploy nginx-deployment --replicas 5
-```
-
-4) Check pod status via `kubectl get pods`, as follows:
-
-**Command**
-```
-$ kubectl get pods --show-labels --watch
-```
-Observe **pending** status
-
-3) Find out what's happening using `kubectl describe`, as follows:
-
-**Command**
-```
-$ kubectl describe pod nginx-deployment-<ANY_PENDING_POD_ID>
-```
-
-Here you can see the event generated by the scheduler saying that the Pod failed to schedule for reason FailedScheduling (and possibly others). The message tells us that there were not enough resources for the Pod on any of the nodes.
-
-
 
 ---
 

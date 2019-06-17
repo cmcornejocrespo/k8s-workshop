@@ -34,30 +34,30 @@ The easiest way to see basic node metrics is by using kubectl. The kubectl top c
 
 1) Deploy example pod
 
-**Command**
-```
-$ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
-```
+        **Command**
+        ```
+        $ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
+        ```
 
 2) Check pod metrics (it may take time)
 
-**Command**
+    **Command**
 
-```
-$ kubectl top pod
+    ```
+    $ kubectl top pod
 
-NAME                                CPU(cores)   MEMORY(bytes)   
-nginx-deployment-86b474f84f-bgrqd   0m           2Mi             
-nginx-deployment-86b474f84f-gv66s   0m           2Mi  
-```
+    NAME                                CPU(cores)   MEMORY(bytes)   
+    nginx-deployment-86b474f84f-bgrqd   0m           2Mi             
+    nginx-deployment-86b474f84f-gv66s   0m           2Mi  
+    ```
 
 3) Clean up
 
-**Command**
+    **Command**
 
-```
-$ kubectl delete deployment nginx-deployment
-```
+    ```
+    $ kubectl delete deployment nginx-deployment
+    ```
 
 ---
 
@@ -74,37 +74,37 @@ For this example we’ll use a Deployment to create two pods initially.
 
 1) Deploy example pod
 
-**Command**
-```
-$ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
-```
+    **Command**
+    ```
+    $ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
+    ```
 
 2) Check pod status
 
-**Command**
+    **Command**
 
-```
-$ kubectl get pods --watch
-```
+    ```
+    $ kubectl get pods --watch
+    ```
 
 3) We can retrieve a lot more information about each of these pods using kubectl describe pod:
 
-**Command**
-```
-$ kubectl describe pod $(kubectl get pods --selector=app=nginx -o jsonpath='{.items[0].metadata.name}')
-```
+    **Command**
+    ```
+    $ kubectl describe pod $(kubectl get pods --selector=app=nginx -o jsonpath='{.items[0].metadata.name}')
+    ```
 
-Here you can see configuration information about the container(s) and Pod (labels, resource requirements, etc.), as well as status information about the container(s) and Pod (state, readiness, restart count, events, etc.).
+    Here you can see configuration information about the container(s) and Pod (labels, resource requirements, etc.), as well as status information about the container(s) and Pod (state, readiness, restart count, events, etc.).
 
-- The container **state** is one of Waiting, Running, or Terminated. Depending on the state, additional information will be provided – here you can see that for a container in Running state, the system tells you when the container started.
+    - The container **state** is one of Waiting, Running, or Terminated. Depending on the state, additional information will be provided – here you can see that for a container in Running state, the system tells you when the container started.
 
-- **Ready** tells you whether the container passed its last readiness probe. (In this case, the container does not have a readiness probe configured; the container is assumed to be ready if no readiness probe is configured.)
+    - **Ready** tells you whether the container passed its last readiness probe. (In this case, the container does not have a readiness probe configured; the container is assumed to be ready if no readiness probe is configured.)
 
-- **Restart** Count tells you how many times the container has been restarted; this information can be useful for detecting crash loops in containers that are configured with a restart policy of ‘always.’
+    - **Restart** Count tells you how many times the container has been restarted; this information can be useful for detecting crash loops in containers that are configured with a restart policy of ‘always.’
 
-- Currently the only **Condition** associated with a Pod is the binary Ready condition, which indicates that the pod is able to service requests and should be added to the load balancing pools of all matching services.
+    - Currently the only **Condition** associated with a Pod is the binary Ready condition, which indicates that the pod is able to service requests and should be added to the load balancing pools of all matching services.
 
-- Lastly, you see a log of recent **events** related to your Pod
+    - Lastly, you see a log of recent **events** related to your Pod
 
 ---
 
@@ -121,60 +121,60 @@ A common scenario that you can detect using events is when you’ve created a Po
 
 1) Start off by deleting the deployment and checking the node status
 
-**Command**
-```sh
-$ kubectl delete deployment nginx-deployment
-```
+    **Command**
+    ```sh
+    $ kubectl delete deployment nginx-deployment
+    ```
 
-**Command**
-```sh
-$ kubectl describe nodes
-```
+    **Command**
+    ```sh
+    $ kubectl describe nodes
+    ```
 
-Understand `kubectl describe nodes` **output**
-
-
-3) Deploy and scale up previous deployment
-
-**Command**
-```
-$ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
-$ kubectl scale deploy nginx-deployment --replicas 5
-```
-
-4) Check pod status via `kubectl get pods`, as follows:
-
-**Command**
-```
-$ kubectl get pods --show-labels --watch
-```
-Observe **pending** status
-
-3) Find out what's happening using `kubectl describe`, as follows:
-
-**Command**
-```
-$ kubectl describe pod nginx-deployment-<ANY_PENDING_POD_ID>
-```
-
-Here you can see the event generated by the scheduler saying that the Pod failed to schedule for reason FailedScheduling (and possibly others). The message tells us that there were not enough resources for the Pod on any of the nodes.
+    Understand `kubectl describe nodes` **output**
 
 
-4) Check node status:
+2) Deploy and scale up previous deployment
+    **Command**
+    
+    ```sh
+    $ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
+    $ kubectl scale deploy nginx-deployment --replicas 5
+    ```
 
-**Command**
-```
-$ kubectl describe nodes
-```
+3) Check pod status via `kubectl get pods`, as follows:
 
-Think of alternatives to solve this...
+    **Command**
+    ```
+    $ kubectl get pods --show-labels --watch
+    ```
+    Observe **pending** status
+
+4) Find out what's happening using `kubectl describe`, as follows:
+
+    **Command**
+    ```
+    $ kubectl describe pod nginx-deployment-<ANY_PENDING_POD_ID>
+    ```
+
+    Here you can see the event generated by the scheduler saying that the Pod failed to schedule for reason FailedScheduling (and possibly others). The message tells us that there were not enough resources for the Pod on any of the nodes.
+
+
+5) Check node status:
+
+    **Command**
+    ```sh
+    $ kubectl describe nodes
+    ```
+
+    Think of alternatives to solve this...
 
 5) Clean up:
 
-**Command**
-```
-$ kubectl delete deployment nginx-deployment
-```
+    **Command**
+    ```sh
+    $ kubectl delete deployment nginx-deployment
+    ```
 
 ---
 
@@ -197,29 +197,29 @@ The easiest way to see basic node metrics is by using kubectl. The kubectl top c
 
 1) Deploy example pod
 
-**Command**
-```
-$ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
-```
+    **Command**
+    ```
+    $ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
+    ```
 
 2) Check node metrics
 
-**Command**
+    **Command**
 
-```
-$ kubectl top node
+    ```
+    $ kubectl top node
 
-NAME       CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
-minikube   137m         6%     730Mi           18%   
-```
+    NAME       CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%   
+    minikube   137m         6%     730Mi           18%   
+    ```
 
 3) Clean up
 
-**Command**
+    **Command**
 
-```
-$ kubectl delete deployment nginx-deployment
-```
+    ```sh
+    $ kubectl delete deployment nginx-deployment
+    ```
 
 ---
 
@@ -235,11 +235,11 @@ $ kubectl delete deployment nginx-deployment
 
 1) Start minikube dashboard:
 
-**Command**
+    **Command**
 
-```sh
-$ minikube dashboard
-```
+    ```sh
+    $ minikube dashboard
+    ```
 
 ---
 
@@ -255,27 +255,27 @@ $ minikube dashboard
 
 1) To install Weave Scope on your Kubernetes cluster, run:
 
-**Command**
+    **Command**
 
-```sh
-$ kubectl apply -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-```
+    ```sh
+    $ kubectl apply -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    ```
 
 2) Open Scope in Your Browser:
 
-**Command**
+    **Command**
 
-```sh
-$ kubectl port-forward -n weave "$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')" 4040
-```
+    ```sh
+    $ kubectl port-forward -n weave "$(kubectl get -n weave pod --selector=weave-scope-component=app -o jsonpath='{.items..metadata.name}')" 4040
+    ```
 
 3) Clean up:
 
-**Command**
+    **Command**
 
-```sh
-$ kubectl delete -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-```
+    ```sh
+    $ kubectl delete -f "https://cloud.weave.works/k8s/scope.yaml?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    ```
 
 ---
 

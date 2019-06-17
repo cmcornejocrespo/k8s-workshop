@@ -52,7 +52,7 @@ $ minikube start --cpus=4 --memory 4096 \
 $ minikube addons list | grep enabled
 ```
 
-3) Check metrics pods are running
+3) Check metrics pods are `Running`
 
 **Command**
 ```sh
@@ -60,7 +60,7 @@ $ kubectl get pods --namespace=kube-system | grep heapster
 $ kubectl get pods --namespace=kube-system | grep metrics-server
 ```
 
-4) Check heapster is connected to influxDB
+4) Check heapster is connected to `influxDB`
 
 **Command**
 ```sh
@@ -106,7 +106,7 @@ kubectl apply -Rf workshop-08/manifests/app
 kubectl get pods --show-labels --watch
 ```
 
-11) Deploy HPA
+11) Deploy `HPA`
 
 **Command**
 
@@ -140,7 +140,7 @@ $ kubectl run --rm -i --tty load-generator --image=busybox /bin/sh
 while true; do wget -q -O- http://php-apache.default.svc.cluster.local; done
 ```
 
-15) Wait for the hpa to trigger (observe hpa and deployment)
+15) Wait for the hpa to trigger (observe `hpa` and `deployment`)
 
 16) Stop the loader and check how the deployment scales down to 5
 

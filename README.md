@@ -11,3 +11,4 @@
 - [Workshop 07 - Monitoring](workshop-07.md)
 - [Workshop 08 - Horizontal Pod Autoscaling](workshop-08.md)
 - [Workshop 09 - Helm the Kubernetes package manager](workshop-09.md)
+- [Workshop 10 - Ingress Controller](workshop-10.md)

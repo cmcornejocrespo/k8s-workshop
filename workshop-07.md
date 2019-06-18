@@ -35,7 +35,7 @@ The easiest way to see basic node metrics is by using kubectl. The kubectl top c
 1) Deploy example pod
 
         **Command**
-        ```
+        ```sh
         $ kubectl apply -f workshop-07/manifests/nginx-with-request.yaml
         ```
 
@@ -310,11 +310,14 @@ Verify it's created
 $ kubectl get ns
 ```
 
-### Deploy elastic logging stack from `workshop-06/manifests/logging` with the command below.
+### Deploy elastic logging stack from `workshop-06/manifests/elastic/` with the command below.
 
 **Command**
 ```sh
-$ kubectl create -Rf workshop-06/manifests/logging
+$ kubectl create -Rf  workshop-06/manifests/elastic/elasticsearch
+$ kubectl create -Rf  workshop-06/manifests/elastic/kibana
+$ kubectl create -Rf  workshop-06/manifests/elastic/logstash
+$ kubectl create -Rf  workshop-06/manifests/elastic/filebeat
 ```
 
 Wait until the stack is ready

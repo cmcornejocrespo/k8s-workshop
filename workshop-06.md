@@ -42,7 +42,7 @@ This demonstration uses a pod specification with a container that writes some te
     ```
 4) Clean up:
     ```
-    $ kubectl delete counter
+    $ kubectl delete pods counter
     ```
 **note** You can use kubectl logs to retrieve logs from a previous instantiation of a container with --previous flag, in case the container has crashed.
 
@@ -71,6 +71,15 @@ We'll deploy a cluster-level logging solution based on ELK+F (elasticsearch, log
 **Objective:** Deploy the stack anf use Kibana to examine the logs from an example pod.
 
 ---
+
+**Note** You need to create a vm with at least 4GB.
+
+**Command**
+
+```sh
+$ minikube start --memory 4096 --cpus=4
+````
+
 1) Create a simple Pod called `counter` using the `busybox` image. Use the
 manifest `workshop-06/manifests/counter-pod.yaml` or the yaml below.
 

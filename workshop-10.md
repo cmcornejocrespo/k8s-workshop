@@ -5,8 +5,7 @@
 * [What is Ingress?](#what-is-ingress?)
   * [Exercise: Set up Ingress on Minikube with the NGINX Ingress Controller](#Exercise:-Set-up-Ingress-on-minikube-with-the-NGINX-ingress-controller)
   * [Exercise: Create fanout ingress-controlled app](#Exercise:-create-fanout-ingress-controlled-app)
-  * [Exercise: Managing the life cycle of my first release](#Exercise:-Managing-the-life-cycle-of-my-first-release)
-* [Exercise: Creating your first helm app](#Exercise:-creating-your-first-helm-app)
+  * [Exercise: Configuring Certificate-Based Authentication with Kubernetes Ingress-Nginx](#Exercise:-Configuring-Certificate-Based-Authentication-with-Kubernetes-Ingress-Nginx)
 
 ---
 
@@ -170,10 +169,145 @@ Let´s send traffic to your Service via hello-world.info.
 
 ---
 
+## Exercise: Configuring Certificate-Based Authentication with Kubernetes Ingress-Nginx
+
+SSL authentication (server --> client)
+
+In SSL authentication, the client is presented with a server’s certificate, the client computer might try to match the server’s CA against the client’s list of trusted CAs. If the issuing CA is trusted, the client will verify that the certificate is authentic and has not been tampered with.
+
+![alt text](workshop-10/images/1WaySSL.png)
+
+### Setting Up Authentication
+
+For this example we will be creating self-signed certificates. As a simple introduction, here are a couple of terms it would be useful to know:
+
+- **CommonName(CN)**: Identifies the hostname or owner associated with the certificate.
+- **Certificate Authority(CA)**: A trusted 3rd party that issues - Certificates. Usually you would obtain this from a trusted source, but for this example we will just create one. The CN is usually the name of the issuer.
+- **Server Certificate**: A Certificate used to identify the server. The CN here is the hostname of the server. The Server Certificate is valid only if it is installed on a server where the hostname matches the CN.
+- **Client Certificate**: A Certificate used to identify a client/user. The CN here is usually the name of the client/user.
+
+  ```sh
+  # Generate the CA Key and Certificate
+  $ openssl req -x509 -sha256 -newkey rsa:4096 -keyout ca.key -out ca.crt -days 356 -nodes -subj '/CN=Acme Cert Authority'
+  
+  # Generate the Server Key, and Certificate and Sign with the CA Certificate
+  $ openssl req -new -newkey rsa:4096 -keyout server.key -out server.csr -nodes -subj '/CN=hello-world.info'
+  $ openssl x509 -req -sha256 -days 365 -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt
+  
+  # Generate the Client Key, and Certificate and Sign with the CA Certificate
+  $ openssl req -new -newkey rsa:4096 -keyout client.key -out client.csr -nodes -subj '/CN=Acme'
+  $ openssl x509 -req -sha256 -days 365 -in client.csr -CA ca.crt -CAkey ca.key -set_serial 02 -out client.crt
+  ```
+
+  We should see this:
+
+  ```sh
+  Signature ok
+  subject=/CN=Acme
+  Getting CA Private Key
+  ```
+
+  And have this files created:
+
+  ```sh
+  .
+  ├── ca.crt
+  ├── ca.key
+  ├── client.crt
+  ├── client.csr
+  ├── client.key
+  ├── server.crt
+  ├── server.csr
+  └── server.key
+  ```
+
+### Creating the Kubernetes Secrets
+
+We must store the certificates generated above in a Kubernetes Secret in order to use them in our Ingress-NGINX controller.
+
+```sh
+$ kubectl create secret generic my-web-certs --from-file=tls.crt=server.crt --from-file=tls.key=server.key --from-file=ca.crt=ca.crt
+```
+
+Check is being properly created:
+
+```sh
+$ kubectl get secret my-web-certs
+```
+
+### Deploy app
+
+1. Deploy previous sample app
+
+    **Command**
+    ```sh
+    $ kubectl run web --image=gcr.io/google-samples/hello-app:2.0 --port=8080
+    ```
+2. Expose the Deployment:
+
+    ```sh
+    $ kubectl expose deployment web --target-port=8080
+     ```
+
+3. Setup the Ingress Rules
+
+    **Note** Make sure `hello-world.info` is already reachable via `/etc/hosts`
+
+    Deploy the following:
+
+    **Command**
+
+    ```sh 
+      echo "
+      apiVersion: extensions/v1beta1
+      kind: Ingress
+      metadata:
+        annotations:
+          nginx.ingress.kubernetes.io/auth-tls-verify-client: \"off\"
+          nginx.ingress.kubernetes.io/auth-tls-secret: \"default/my-web-certs\"
+        name: web-ingress
+      spec:
+        rules:
+        - host: hello-world.info
+          http:
+            paths:
+            - backend:
+                serviceName: web
+                servicePort: 8080
+              path: /
+        tls:
+        - hosts:
+          - hello-world.info
+          secretName: my-web-certs
+      " | kubectl apply -f -
+      ```
+
+    This allows us to access the service `web` via `https://hello-world.info/`.
+
+    - TLS is enabled and it is using the tls.key and tls.crt provided in the my-certs secret.
+    - The nginx.ingress.kubernetes.io/auth-tls-secret annotation uses ca.crt from the my-web-certs secret.
+
+    Check is properly created:
+
+    **Command**
+    ```sh
+    kubectl get ing web-ingress
+    
+    NAME          HOSTS              ADDRESS   PORTS     AGE
+    web-ingress   hello-world.info             80, 443   24s
+    ```
+
+---
+
+[Back to Index](#index)
+
+---
+
 # Helpful Resources
 
 * [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#types-of-ingress)
 * [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx)
+* [Nginx Ingress Controller example](https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples)
 
 ---
 

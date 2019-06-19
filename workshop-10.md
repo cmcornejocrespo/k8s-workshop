@@ -182,43 +182,27 @@ In SSL authentication, the client is presented with a server’s certificate, th
 For this example we will be creating self-signed certificates. As a simple introduction, here are a couple of terms it would be useful to know:
 
 - **CommonName(CN)**: Identifies the hostname or owner associated with the certificate.
-- **Certificate Authority(CA)**: A trusted 3rd party that issues - Certificates. Usually you would obtain this from a trusted source, but for this example we will just create one. The CN is usually the name of the issuer.
 - **Server Certificate**: A Certificate used to identify the server. The CN here is the hostname of the server. The Server Certificate is valid only if it is installed on a server where the hostname matches the CN.
-- **Client Certificate**: A Certificate used to identify a client/user. The CN here is usually the name of the client/user.
-
   ```sh
-  # Generate the CA Key and Certificate
-  $ openssl req -x509 -sha256 -newkey rsa:4096 -keyout ca.key -out ca.crt -days 356 -nodes -subj '/CN=Acme Cert Authority'
-  
-  # Generate the Server Key, and Certificate and Sign with the CA Certificate
-  $ openssl req -new -newkey rsa:4096 -keyout server.key -out server.csr -nodes -subj '/CN=hello-world.info'
-  $ openssl x509 -req -sha256 -days 365 -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt
-  
-  # Generate the Client Key, and Certificate and Sign with the CA Certificate
-  $ openssl req -new -newkey rsa:4096 -keyout client.key -out client.csr -nodes -subj '/CN=Acme'
-  $ openssl x509 -req -sha256 -days 365 -in client.csr -CA ca.crt -CAkey ca.key -set_serial 02 -out client.crt
+  # Generate the Server Key and Certificate
+  $ openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=hello-world.info"
   ```
 
   We should see this:
 
   ```sh
-  Signature ok
-  subject=/CN=Acme
-  Getting CA Private Key
+  Generating a 2048 bit RSA private key
+  ....+++
+  .....+++
+  writing new private key to 'tls.key'
   ```
 
-  And have this files created:
+  And have these files created:
 
   ```sh
   .
-  ├── ca.crt
-  ├── ca.key
-  ├── client.crt
-  ├── client.csr
-  ├── client.key
-  ├── server.crt
-  ├── server.csr
-  └── server.key
+  ├── tls.crt
+  └── tls.key
   ```
 
 ### Creating the Kubernetes Secrets
@@ -226,13 +210,13 @@ For this example we will be creating self-signed certificates. As a simple intro
 We must store the certificates generated above in a Kubernetes Secret in order to use them in our Ingress-NGINX controller.
 
 ```sh
-$ kubectl create secret generic my-web-certs --from-file=tls.crt=server.crt --from-file=tls.key=server.key --from-file=ca.crt=ca.crt
+$ kubectl create secret tls tls-secret --key tls.key --cert tls.crt
 ```
 
 Check is being properly created:
 
 ```sh
-$ kubectl get secret my-web-certs
+$ kubectl get secret tls-secret
 ```
 
 ### Deploy app
@@ -258,43 +242,21 @@ $ kubectl get secret my-web-certs
     **Command**
 
     ```sh 
-      echo "
-      apiVersion: extensions/v1beta1
-      kind: Ingress
-      metadata:
-        annotations:
-          nginx.ingress.kubernetes.io/auth-tls-verify-client: \"off\"
-          nginx.ingress.kubernetes.io/auth-tls-secret: \"default/my-web-certs\"
-        name: web-ingress
-      spec:
-        rules:
-        - host: hello-world.info
-          http:
-            paths:
-            - backend:
-                serviceName: web
-                servicePort: 8080
-              path: /
-        tls:
-        - hosts:
-          - hello-world.info
-          secretName: my-web-certs
-      " | kubectl apply -f -
+      $ kubectl apply -f workshop-10/manifests/certs/ingress.yaml
       ```
 
     This allows us to access the service `web` via `https://hello-world.info/`.
 
-    - TLS is enabled and it is using the tls.key and tls.crt provided in the my-certs secret.
-    - The nginx.ingress.kubernetes.io/auth-tls-secret annotation uses ca.crt from the my-web-certs secret.
+    - TLS is enabled and it is using the tls.key and tls.crt provided in the tls-secret secret.
 
     Check is properly created:
 
     **Command**
     ```sh
-    kubectl get ing web-ingress
+    kubectl get ing web-ingress-tls
     
     NAME          HOSTS              ADDRESS   PORTS     AGE
-    web-ingress   hello-world.info             80, 443   24s
+    web-ingress-tls   hello-world.info             80, 443   24s
     ```
 
 ---
@@ -308,6 +270,7 @@ $ kubectl get secret my-web-certs
 * [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#types-of-ingress)
 * [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx)
 * [Nginx Ingress Controller example](https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples)
+* [Nginx tls termination](https://kubernetes.github.io/ingress-nginx/examples/tls-termination/)
 
 ---
 

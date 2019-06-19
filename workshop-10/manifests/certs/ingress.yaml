@@ -1,20 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/auth-tls-verify-client: "off"
-    nginx.ingress.kubernetes.io/auth-tls-secret: "default/my-web-certs"
-  name: web-ingress
+  name: web-ingress-tls
 spec:
-  rules:
-  - host: hello-world.info
-    http:
-      paths:
-      - backend:
-          serviceName: web
-          servicePort: 8080
-        path: /
   tls:
-  - hosts:
-    - hello-world.info
-    secretName: my-web-certs
+    - hosts:
+      - hello-world.info
+      secretName: tls-secret
+  rules:
+    - host: hello-world.info
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: web
+            servicePort: 8080

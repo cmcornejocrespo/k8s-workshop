@@ -17,9 +17,9 @@ Ingress exposes HTTP and HTTPS routes from outside the cluster to services withi
 ```sh
         internet
             |
-      [ Ingress ]
-      --|-----|--
-      [ Services ]
+       [ Ingress ]
+       --|-----|--
+       [ Services ]
 ```
 
 You must have an ingress controller to satisfy an Ingress. Only creating an Ingress resource has no effect.
@@ -268,13 +268,13 @@ $ kubectl get secret tls-secret
 
 ### Clean up
 
-TODO!!!!!!
-
 **Command**
 
 ```sh
-$
-
+$ kubectl delete deployment web-secret
+$ kubectl delete svc web-secret
+$ kubectl delete secret tls-secret
+$ kubectl delete -f workshop-10/manifests/certs/ingress.yaml
 ```
 
 ---
